@@ -2,7 +2,6 @@ import { User } from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponce } from "../utils/ApiResponce.js";
-import mongoose from "mongoose";
 
 const generateRefreshTokenAndAccessToken = async (userId) => {
   try {
@@ -21,7 +20,7 @@ const generateRefreshTokenAndAccessToken = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  let { fullName, password, email, phone, address, city, state, pincode, dob } =
+  let { fullName, password, email, phone, address, city, state, pincode, dob,isAdmin } =
     req.body;
 
   if (
@@ -52,6 +51,7 @@ const registerUser = asyncHandler(async (req, res) => {
     pincode,
     password,
     dob,
+    isAdmin
   });
 
   const user = await User.findById(newUser._id).select(
@@ -122,7 +122,7 @@ const getUserDetails = asyncHandler(async (req,res)=>{
     },
   {
     $lookup:{
-      from:"Booking",
+      from:"bookings",
       foreignField:"customer",
       localField: "_id",
       as:"Bookings"
@@ -136,7 +136,8 @@ const getUserDetails = asyncHandler(async (req,res)=>{
           "$state", " - ",
           "$pincode"
         ]
-      }
+      },
+     
     }
   },
   {
@@ -146,7 +147,9 @@ const getUserDetails = asyncHandler(async (req,res)=>{
       phone:1,
       dob:1,
       fullAddress:1,
-      bookingHistory:1
+      bookingHistory:1,
+      isAdmin:1,
+      Bookings:1
 
     }
   }
@@ -158,7 +161,7 @@ const getUserDetails = asyncHandler(async (req,res)=>{
 
   return res
   .status(200)
-  .json(new ApiResponce(200,userDetails,"fetched successfully user details"))
+  .json(new ApiResponce(200,userDetails[0],"fetched successfully user details"))
 })
 
 const changePassword = asyncHandler(async (req,res)=>{
@@ -194,6 +197,9 @@ const changePassword = asyncHandler(async (req,res)=>{
 const updateUserDetails = asyncHandler(async (req,res)=>{
   const {fullName,email,dob,address,city,state,pincode} = req.body
   const userId = req.user?._id;
+  if (dob?.trim()) {
+    dob = new Date(dob)
+  }
 
   const updatedUser = await User.findByIdAndUpdate({"_id":userId},{
     fullName,

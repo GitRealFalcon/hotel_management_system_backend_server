@@ -1,0 +1,141 @@
+import { Booking } from "../models/booking.model.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponce } from "../utils/ApiResponce.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import { User } from "../models/user.model.js";
+import mongoose from "mongoose";
+
+const newBooking = asyncHandler(async (req, res) => {
+  let { roomNo, checkIn, checkOut,isPayed,perDayCharge,paymentId } = req.body;
+  const userId = req.user?._id;
+  if (![checkIn, checkOut, roomNo,perDayCharge].every((field) => field?.trim?.())) {
+    throw new ApiError(400, "All fields required");
+  }
+
+  perDayCharge = Number(perDayCharge)
+
+  const booking = await Booking.create({
+    roomNo,
+    checkIn,
+    checkOut,
+    perDayCharge,
+    isPayed,
+    customer : userId,
+    paymentId
+
+  })
+
+  if (!booking) {
+    throw new ApiError(500,"somthing wnt wrong whole Booking")
+  }
+
+  await User.findByIdAndUpdate(
+    userId,
+    {
+       $push: { bookingHistory: booking._id }
+    },
+    {new: true}
+  )
+
+  return res
+  .status(200)
+  .json(new ApiResponce(200,booking,"Booking successfully"))
+});
+
+const getBookingDetails = asyncHandler(async (req,res)=>{
+    const {bookingId} = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+        throw new ApiError(400, "booking Id required")
+    }
+
+    const bookingDetails = await Booking.findById(bookingId)
+
+    if (!bookingDetails) {
+        throw new ApiError(500,"something went error while find booking details")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponce(200,bookingDetails,"booking details fetched successfully"))
+})
+
+const cancelBooking = asyncHandler(async (req,res)=>{
+    const {bookingId} = req.body;
+    const userId = req.user?._id;
+    
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+        throw new ApiError(400,"booking Id required")
+    }
+
+    const booking = await Booking.findOne(
+        {
+            _id: bookingId,
+          customer: userId 
+        }
+    )
+
+    if (booking.status !== "Active") {
+        throw new ApiError(400,"booking not active")
+    }
+
+    const cancel = await Booking.findOneAndUpdate(
+        {
+          _id: bookingId,
+          customer: userId
+        },
+        {
+            status : "Cancelled"
+        },
+        {new: true}
+    )
+
+    if (!cancel) {
+        throw new ApiError(500,"somthing went wrong while cancel booking")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponce(200,{},"Booking cancelled successfully"))
+})
+
+const checkout = asyncHandler(async (req,res)=>{
+   const {bookingId} = req.body;
+    const userId = req.user?._id;
+    
+    if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+        throw new ApiError(400,"booking Id required")
+    }
+
+     const booking = await Booking.findOne(
+        {
+            _id: bookingId,
+          customer: userId 
+        }
+    )
+
+    if (booking.status !== "Active") {
+        throw new ApiError(400,"booking not active")
+    }
+
+    const ischeckout = await Booking.findOneAndUpdate(
+        {
+          _id: bookingId,
+          customer: userId
+        },
+        {
+            status : "Completed"
+        },
+        {new: true}
+    )
+
+    if (!ischeckout) {
+        throw new ApiError(500,"somthing went wrong while checkout")
+    }
+
+    return res
+    .status(200)
+    .json(new ApiResponce(200,{},"Booking checkout successfully"))
+})
+
+export {newBooking,getBookingDetails, cancelBooking,checkout};

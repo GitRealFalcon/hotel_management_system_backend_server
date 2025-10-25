@@ -16,6 +16,11 @@ const bookingSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    status:{
+      type: String,
+      default: "Active",
+      enum:["Active","Cancelled","Completed"]
+    },
     checkIn: {
       type: Date,
       required: [true, "Check-in date is required"],
@@ -24,7 +29,6 @@ const bookingSchema = new mongoose.Schema(
       type: Date,
       validate: {
         validator: function (value) {
-          // Run only if checkIn is provided
           return !this.checkIn || value > this.checkIn;
         },
         message: "Check-out date must be after check-in date",
@@ -40,10 +44,10 @@ const bookingSchema = new mongoose.Schema(
         ref: "Transection",
       },
     },
-    amount: {
+    perDayCharge: {
       type: Number,
       min: [0, "Amount cannot be negative"],
-      required: [true, "Amount is required"],
+      required: [true, "per Day charge required"]
     },
   },
   {
@@ -57,5 +61,14 @@ bookingSchema.virtual("totalDays").get(function () {
   const diff = this.checkOut - this.checkIn;
   return Math.ceil(diff / (1000 * 60 * 60 * 24)); // days
 });
+bookingSchema.virtual("totalAmount").get(function () {
+  if (!this.checkIn || !this.checkOut) return 0;
+  const diff = this.checkOut - this.checkIn;
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24)); // days
+  return days * this.perDayCharge
+});
+
+bookingSchema.set("toJSON", { virtuals: true });
+bookingSchema.set("toObject", { virtuals: true });
 
 export const Booking = mongoose.model("Booking", bookingSchema);

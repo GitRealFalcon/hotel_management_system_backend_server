@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    isAdmin:{
+        type: Boolean,
+        default:false
+    },
     bookingHistory: [
       {
         type: mongoose.Types.ObjectId,
