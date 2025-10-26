@@ -4,15 +4,28 @@ import { ApiResponce } from "../utils/ApiResponce.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import mongoose from "mongoose";
+import { Room } from "../models/room.model.js";
 
 const newBooking = asyncHandler(async (req, res) => {
-  let { roomNo, checkIn, checkOut,isPayed,perDayCharge,paymentId } = req.body;
+  let { roomNo, checkIn, checkOut,isPayed,paymentId } = req.body;
   const userId = req.user?._id;
-  if (![checkIn, checkOut, roomNo,perDayCharge].every((field) => field?.trim?.())) {
+  if ([checkIn, checkOut, roomNo].some((field) => !field?.toString().trim())) {
     throw new ApiError(400, "All fields required");
   }
 
-  perDayCharge = Number(perDayCharge)
+  const room = await Room.findOne({
+    roomNo
+  })
+
+  if (!room) {
+    throw new ApiError(404,"Room Not Found")
+  }
+
+  if (room.isAvailable !== true) {
+    throw new ApiError(403,"Room Not Available")
+  }
+
+ const perDayCharge = Number(room.price)
 
   const booking = await Booking.create({
     roomNo,
@@ -28,6 +41,14 @@ const newBooking = asyncHandler(async (req, res) => {
   if (!booking) {
     throw new ApiError(500,"somthing wnt wrong whole Booking")
   }
+
+  await Room.findOneAndUpdate(
+    {roomNo},
+    {
+      $set: { isAvailable: false }
+    },
+    {new:true}
+  )
 
   await User.findByIdAndUpdate(
     userId,
@@ -94,6 +115,14 @@ const cancelBooking = asyncHandler(async (req,res)=>{
         throw new ApiError(500,"somthing went wrong while cancel booking")
     }
 
+    await Room.findOneAndUpdate(
+      {roomNo:cancel.roomNo},
+      {
+        $set:{isAvailable: true}
+      },
+      {new: true}
+    )
+
     return res
     .status(200)
     .json(new ApiResponce(200,{},"Booking cancelled successfully"))
@@ -132,6 +161,14 @@ const checkout = asyncHandler(async (req,res)=>{
     if (!ischeckout) {
         throw new ApiError(500,"somthing went wrong while checkout")
     }
+
+     await Room.findOneAndUpdate(
+      {roomNo:ischeckout.roomNo},
+      {
+        $set:{isAvailable: true}
+      },
+      {new: true}
+    )
 
     return res
     .status(200)

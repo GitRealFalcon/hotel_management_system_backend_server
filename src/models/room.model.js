@@ -27,7 +27,7 @@ const roomSchema = new mongoose.Schema(
       {
         secure_url: {
           type: String,
-          default: "https://example.com/default-room.jpg",
+          default: "https://res.cloudinary.com/falcon1996/image/upload/v1761448008/room_image_2_j2mmg2.avif",
         },
         public_id: {
           type: String,
