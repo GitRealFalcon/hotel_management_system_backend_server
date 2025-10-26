@@ -5,6 +5,11 @@ import { Room } from "../models/room.model.js";
 import { cloudinaryUpload } from "../cloudinary.js";
 import {User} from "../models/user.model.js"
 import mongoose from "mongoose";
+import fs from "fs"
+
+const unlinkFile = (imageLocalPath)=>{
+  fs.unlinkSync(imageLocalPath)
+}
 
 const addRoom = asyncHandler(async (req, res) => {
   let { roomNo, price, description, capacity, type } = req.body;
@@ -12,18 +17,30 @@ const addRoom = asyncHandler(async (req, res) => {
   const imageLocalPath = req.file?.path;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
+     if (imageLocalPath) {
+      unlinkFile(imageLocalPath)
+    }
     throw new ApiError(401,"invalid userId")
   }
   const user = await User.findById(userId)
   if (!user) {
+    if (imageLocalPath) {
+      unlinkFile(imageLocalPath)
+    }
     throw new ApiError(404,"User not found")
   }
 
   if (user.isAdmin !== true) {
+     if (imageLocalPath) {
+      unlinkFile(imageLocalPath)
+    }
     throw new ApiError(401,"access denied")
   }
 
   if ( [roomNo, price, description, capacity, type].some((field) => !field?.toString().trim())) {
+     if (imageLocalPath) {
+      unlinkFile(imageLocalPath)
+    }
     throw new ApiError(400, "All fields required");
   }
 
@@ -35,6 +52,9 @@ const addRoom = asyncHandler(async (req, res) => {
   })
 
   if (isExist) {
+    if (imageLocalPath) {
+      unlinkFile(imageLocalPath)
+    }
     throw new ApiError(400,"Room No already exist")
   }
 

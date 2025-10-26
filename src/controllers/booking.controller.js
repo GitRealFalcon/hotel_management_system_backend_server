@@ -70,15 +70,56 @@ const getBookingDetails = asyncHandler(async (req,res)=>{
         throw new ApiError(400, "booking Id required")
     }
 
-    const bookingDetails = await Booking.findById(bookingId)
+    const rawBookingDetails = await Booking.aggregate([
+      {
+        $match:{
+          _id: new mongoose.Types.ObjectId(bookingId)
+        }
+      },
+      {
+        $lookup:{
+          from:"users",
+          foreignField:"_id",
+          localField:"customer",
+          as:"customerDetails",
+          pipeline:[
+            {
+              $project:{
+                fullName:1,
+                email:1,
+                phone:1
+              }
+            }
+          ]
+        }
+      },
+      {
+        $project:{
+          customerDetails:1,
+          roomNo:1,
+          date:1,
+          status:1,
+          checkIn:1,
+          isChekedIn:1,
+          checkOut:1,
+          payment:1,
+          perDayCharge:1,
+        }
+      }
+    ])
 
-    if (!bookingDetails) {
+    
+    if (!rawBookingDetails || rawBookingDetails.length === 0) {
         throw new ApiError(500,"something went error while find booking details")
     }
 
+    const bookingDetails = rawBookingDetails.map( doc => Booking.hydrate(doc))
+
+    
+
     return res
     .status(200)
-    .json(new ApiResponce(200,bookingDetails,"booking details fetched successfully"))
+    .json(new ApiResponce(200,bookingDetails[0],"booking details fetched successfully"))
 })
 
 const cancelBooking = asyncHandler(async (req,res)=>{
@@ -100,7 +141,7 @@ const cancelBooking = asyncHandler(async (req,res)=>{
         throw new ApiError(403,`Cannot cancel booking,Booking status: ${booking.status}`)
     }
 
-    if (booking.isChekedIn !== true) {
+    if (booking.isChekedIn === true) {
       throw new ApiError(403,"Cannot Cancel booking after chekedIn")
     }
 
@@ -149,6 +190,10 @@ const checkout = asyncHandler(async (req,res)=>{
 
     if (booking.status !== "Active") {
         throw new ApiError(403,`Cannot Checkout, Booking status: ${booking.status}`)
+    }
+
+    if (booking.isChekedIn !== true) {
+      throw new ApiError(403,"Cannot Checkout Before checkIn")
     }
 
     const ischeckout = await Booking.findOneAndUpdate(
