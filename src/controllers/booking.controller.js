@@ -100,6 +100,10 @@ const cancelBooking = asyncHandler(async (req,res)=>{
         throw new ApiError(400,"booking not active")
     }
 
+    if (booking.isChekedIn !== true) {
+      throw new ApiError(403,"Cannot Cancel booking after chekedIn")
+    }
+
     const cancel = await Booking.findOneAndUpdate(
         {
           _id: bookingId,
@@ -175,4 +179,54 @@ const checkout = asyncHandler(async (req,res)=>{
     .json(new ApiResponce(200,{},"Booking checkout successfully"))
 })
 
-export {newBooking,getBookingDetails, cancelBooking,checkout};
+const checkIn = asyncHandler(async (req,res)=>{
+  const {bookingId} = req.body;
+  const userId = req.user?._id;
+
+  const user = await User.findById(userId)
+  if (!user) {
+    throw new ApiError(404,"user Not Found")
+  }
+
+  if (user.isAdmin !== true) {
+    throw new ApiError(403,"access denied")
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    throw new ApiError(400,"Invalid Booking Id")
+  }
+
+  const booking = await Booking.findOne(
+    {
+      _id : bookingId
+    }
+  )
+
+  if (!booking) {
+    throw new  ApiError(404,"Booking Not Found")
+  }
+
+  if (booking.status !== "Active") {
+    throw new ApiError(403,`cannot perform checkin, Booking status: ${booking.status}`)
+  }
+
+  const checkedInBooking = await Booking.findOneAndUpdate(
+    {
+      _id: bookingId
+    },
+    {
+      $set:{isChekedIn: true}
+    },
+    {new: true}
+  )
+
+  if (!checkedInBooking) {
+    throw new ApiError(500,"Something went wrong while chekedIn")
+  }
+
+  return res
+  .status(200)
+  .json(new ApiResponce(200,checkedInBooking,"checkedIn successfully"))
+})
+
+export {newBooking,getBookingDetails, cancelBooking,checkout,checkIn};
