@@ -97,7 +97,7 @@ const cancelBooking = asyncHandler(async (req,res)=>{
     )
 
     if (booking.status !== "Active") {
-        throw new ApiError(400,"booking not active")
+        throw new ApiError(403,`Cannot cancel booking,Booking status: ${booking.status}`)
     }
 
     if (booking.isChekedIn !== true) {
@@ -148,7 +148,7 @@ const checkout = asyncHandler(async (req,res)=>{
     )
 
     if (booking.status !== "Active") {
-        throw new ApiError(400,"booking not active")
+        throw new ApiError(403,`Cannot Checkout, Booking status: ${booking.status}`)
     }
 
     const ischeckout = await Booking.findOneAndUpdate(
