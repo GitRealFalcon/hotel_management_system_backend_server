@@ -19,10 +19,12 @@ App.use(cookieParser())
 import { userRouter } from "./routes/user.routes.js"
 import { bookingRouter } from "./routes/booking.routes.js"
 import { roomRouter } from "./routes/room.routes.js"
+import { transactionRouter } from "./routes/transaction.routes.js"
 
 App.use("/api/v1/users",userRouter)
 App.use("/api/v1/bookings",bookingRouter)
 App.use("/api/v1/rooms",roomRouter)
+App.use("/api/v1/transactions",transactionRouter)
 
 
 export {App}

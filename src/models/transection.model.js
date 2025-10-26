@@ -39,7 +39,7 @@ const transactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "Success", "Failed", "Refunded"],
+      enum: ["Pending", "Success", "Failed", "Refunded","Unknown"],
       default: "Pending",
     },
     transactionDate: {
