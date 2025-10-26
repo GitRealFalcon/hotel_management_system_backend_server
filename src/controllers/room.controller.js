@@ -124,23 +124,24 @@ const updateRoomDetails = asyncHandler(async (req,res)=>{
        price = Number(price) 
     }
 
-    const updatedUser = await Room.findOneAndUpdate(
+    const updatedRoom = await Room.findOneAndUpdate(
         {roomNo},
         {
            price,
            description,
            capacity,
            type 
-        }
+        },
+        {new: true ,runValidators: true}
     )
 
-    if (!updatedUser) {
+    if (!updatedRoom) {
         throw new ApiError(500,"something went wrong while update room details")
     }
 
     return res
     .status(200)
-    .json(new ApiResponce(200,updatedUser,"room update successfully"))
+    .json(new ApiResponce(200,updatedRoom,"room update successfully"))
 })
 
 export {addRoom,getRoomDeatils,getAllRooms,updateRoomDetails};
