@@ -20,21 +20,20 @@ const generateRefreshTokenAndAccessToken = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  let { fullName, password, email, phone, address, city, state, pincode, dob,isAdmin } =
+  let { fullName, password, email} =
     req.body;
 
   if (
-    [fullName, password, email, phone, address, city, state, pincode, dob].some(
+    [fullName, password, email].some(
       (field) => !field?.trim()
     )
   ) {
     throw new ApiError(400, "All fields required");
   }
 
-  dob = new Date(dob)
 
   const isExist = await User.findOne({
-    $or: [{ email }, { phone }],
+    email
   });
 
   if (isExist) {
@@ -43,15 +42,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const newUser = await User.create({
     fullName,
-    email,
-    phone,
-    address,
-    state,
-    city,
-    pincode,
-    password,
-    dob,
-    isAdmin
+    email, 
+   password
   });
 
   const user = await User.findById(newUser._id).select(
@@ -195,13 +187,16 @@ const changePassword = asyncHandler(async (req,res)=>{
 })
 
 const updateUserDetails = asyncHandler(async (req,res)=>{
-  const {fullName,email,dob,address,city,state,pincode} = req.body
+  let {fullName,phone,dob,address,city,state,pincode} = req.body
   const userId = req.user?._id;
-  if (dob?.trim()) {
+  if (dob?.String().trim()) {
     dob = new Date(dob)
   }
+  if (phone?.String().trim()) {
+    phone = Number(phone)
+  }
 
-  const updatedUser = await User.findByIdAndUpdate({"_id":userId},{
+  const updatedUser = await User.findByIdAndUpdate(userId,{
     fullName,
     email,
     dob,

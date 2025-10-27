@@ -5,10 +5,8 @@ import { Transaction } from "../models/transection.model.js";
 import mongoose from "mongoose";
 import Razorpay from "razorpay";
 import crypto from "crypto";
-import dotenv from "dotenv";
 import { Booking } from "../models/booking.model.js";
 
-dotenv.config();
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -20,10 +18,21 @@ const razorpay = new Razorpay({
 
 const createOrder = asyncHandler(async (req, res) => {
   const { amount, bookingId } = req.body;
-  const userId = req.user?.key_id;
+  const userId = req.user?._id;
+
+  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
+    throw new ApiError(401,"invalid booking Id")
+  }
 
   if (!amount || !bookingId) {
     throw new ApiError(400, "Amount and BookingId required");
+  }
+
+  const booking = await Booking.findById(bookingId)
+
+
+  if (userId?.toString().trim() !== booking.customer?.toString().trim()) {
+    throw new ApiError(401,"access denied")
   }
 
   const options = {
@@ -38,7 +47,9 @@ const createOrder = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Order creation field");
   }
 
-  return res.staus(200).json(
+  return res
+  .status(200)
+  .json(
     new ApiResponce(
       200,
       {

@@ -21,33 +21,27 @@ const userSchema = new mongoose.Schema(
 
     phone: {
       type: String,
-      required: true,
       unique: true,
       match: [/^[0-9]{10}$/, "Phone number must be 10 digits"],
     },
 
     dob: {
       type: Date,
-      required: true,
     },
     address: {
       type: String,
       trim: true,
-      required: true,
     },
     city: {
       type: String,
-      required: true,
       trim: true,
     },
     state: {
       type: String,
-      required: true,
       trim: true,
     },
     pincode: {
-      type: String,
-      required: true,
+      type: String
     },
     password: {
       type: String,
