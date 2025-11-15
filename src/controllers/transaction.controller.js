@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Booking } from "../models/booking.model.js";
+import {User} from "../models/user.model.js"
 
 
 const razorpay = new Razorpay({
@@ -20,6 +21,7 @@ const createOrder = asyncHandler(async (req, res) => {
   const { amount, bookingId } = req.body;
   const userId = req.user?._id;
 
+  
   if (!mongoose.Types.ObjectId.isValid(bookingId)) {
     throw new ApiError(401,"invalid booking Id")
   }
@@ -170,4 +172,24 @@ const getTransactionDetail = asyncHandler(async (req,res)=>{
     .json(new ApiResponce(200,transaction,"Transaction Found"))
 })
 
-export { createOrder,verifyPayment,getTransactionDetail };
+const getTransactions = asyncHandler(async(req,res)=>{
+  const userId = req.user?._id
+
+  const user = await User.findById(userId)
+
+  if (!user) {
+    throw new ApiError(404, "User Not Found")
+  }
+
+  if (!user.isAdmin) {
+    throw new ApiError(403,"Access Denied")
+  }
+
+  const transections = await Transaction.find()
+
+  return res
+  .status(200)
+  .json(new ApiResponce(200,transections,"transection fetched successfully"))
+})
+
+export { createOrder,verifyPayment,getTransactionDetail,getTransactions };

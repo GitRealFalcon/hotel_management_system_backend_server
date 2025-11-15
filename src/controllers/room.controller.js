@@ -91,7 +91,7 @@ const addRoom = asyncHandler(async (req, res) => {
 });
 
 const getRoomDeatils = asyncHandler(async (req,res)=>{
-    let {roomNo} = req.body
+    let {roomNo} = req.query
 
     if (!roomNo) {
         throw new ApiError(400,"Room No required")
@@ -164,4 +164,26 @@ const updateRoomDetails = asyncHandler(async (req,res)=>{
     .json(new ApiResponce(200,updatedRoom,"room update successfully"))
 })
 
-export {addRoom,getRoomDeatils,getAllRooms,updateRoomDetails};
+const getAvailableRooms = asyncHandler(async(req,res)=>{
+  const {CheckInDate,CheckOutDate,geust=1} = req.query
+
+  const availableRooms = await Room.find({
+    capacity: {$gt : geust},
+    $nor: [
+      {
+        bookings: {
+          $elemMatch : {
+            checkIn: {$lt: CheckOutDate},
+            checkOut: {$gt: CheckInDate}
+          }
+        }
+      }
+    ]
+  })
+
+  return res
+  .status(200)
+  .json(new ApiResponce(200,availableRooms,"fetched successfully"))
+})
+
+export {addRoom,getRoomDeatils,getAllRooms,updateRoomDetails,getAvailableRooms};

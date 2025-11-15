@@ -9,6 +9,7 @@ import { Room } from "../models/room.model.js";
 const newBooking = asyncHandler(async (req, res) => {
   let { roomNo, checkIn, checkOut,isPayed,paymentId } = req.body;
   const userId = req.user?._id;
+  
   if ([checkIn, checkOut, roomNo].some((field) => !field?.toString().trim())) {
     throw new ApiError(400, "All fields required");
   }
@@ -64,7 +65,9 @@ const newBooking = asyncHandler(async (req, res) => {
 });
 
 const getBookingDetails = asyncHandler(async (req,res)=>{
-    const {bookingId} = req.body;
+    const {bookingId} = req.query;
+
+    
 
     if (!mongoose.Types.ObjectId.isValid(bookingId)) {
         throw new ApiError(400, "booking Id required")
@@ -177,16 +180,20 @@ const checkout = asyncHandler(async (req,res)=>{
    const {bookingId} = req.body;
     const userId = req.user?._id;
     
+    
+    
     if (!mongoose.Types.ObjectId.isValid(bookingId)) {
         throw new ApiError(400,"booking Id required")
     }
-
+   
      const booking = await Booking.findOne(
         {
             _id: bookingId,
           customer: userId 
         }
     )
+
+    
 
     if (booking.status !== "Active") {
         throw new ApiError(403,`Cannot Checkout, Booking status: ${booking.status}`)
@@ -274,4 +281,24 @@ const checkIn = asyncHandler(async (req,res)=>{
   .json(new ApiResponce(200,checkedInBooking,"checkedIn successfully"))
 })
 
-export {newBooking,getBookingDetails, cancelBooking,checkout,checkIn};
+const getBookings = asyncHandler(async(req,res)=>{
+ const userId = req.user?._id
+
+  const user = await User.findById(userId)
+
+  if (!user) {
+    throw new ApiError(404,"User Not Found")
+  }
+
+  if (user.isAdmin !== true) {
+    throw new ApiError(403,"Access denied")  
+  }
+
+  const bookings = await Booking.find()
+
+  return res
+  .status(200)
+  .json(new ApiResponce(200,bookings,"Booking fetch successfully"))
+})
+
+export {newBooking,getBookingDetails, cancelBooking,checkout,checkIn,getBookings};
