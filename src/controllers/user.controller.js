@@ -102,7 +102,9 @@ const userLogin = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", refreshToken, {options,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponce(
         200,
@@ -225,7 +227,9 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 const logOutUser = asyncHandler(async (req, res) => {
  const options = {
     httpOnly: true,
-    secure: true,
+     secure: true,
+    sameSite: "none",
+     path: "/",
   };
   return res
     .status(200)
