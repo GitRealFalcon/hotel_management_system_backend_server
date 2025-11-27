@@ -3,7 +3,6 @@ import asyncHandler from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponce } from "../utils/ApiResponce.js";
 
-
 const generateRefreshTokenAndAccessToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -74,7 +73,6 @@ const userLogin = asyncHandler(async (req, res) => {
 
   const userExist = await User.findOne({ $or: orConditions });
 
-
   if (!userExist) {
     throw new ApiError(404, "user not found");
   }
@@ -95,14 +93,14 @@ const userLogin = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    maxAge: 15 * 60 * 1000,
-     path: "/",
+    path: "/",
   };
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, {options,
+    .cookie("accessToken", accessToken, { options, maxAge: 15 * 60 * 1000 })
+    .cookie("refreshToken", refreshToken, {
+      options,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     })
     .json(
@@ -191,7 +189,7 @@ const changePassword = asyncHandler(async (req, res) => {
 const updateUserDetails = asyncHandler(async (req, res) => {
   let { fullName, phone, dob, address, city, state, pincode } = req.body;
   const userId = req.user?._id;
-  
+
   if (dob?.toString().trim()) {
     dob = new Date(dob);
   }
@@ -225,38 +223,41 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
- const options = {
+  const options = {
     httpOnly: true,
-     secure: true,
+    secure: true,
     sameSite: "none",
-     path: "/",
+    path: "/",
   };
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", { options, maxAge: 15 * 60 * 1000 })
+    .clearCookie("refreshToken", {
+      options,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
     .json(new ApiResponce(200, {}, "logout successfully"));
 });
 
-const getCustomers = asyncHandler(async(req,res)=>{
-  const userId = req.user?._id
+const getCustomers = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
 
-  const user = await User.findById(userId)
+  const user = await User.findById(userId);
 
   if (!user) {
-    throw new ApiError(404,"User Not Found")
+    throw new ApiError(404, "User Not Found");
   }
 
   if (user.isAdmin !== true) {
-    throw new ApiError(403,"Access denied")  
+    throw new ApiError(403, "Access denied");
   }
 
-  const customers = await User.find()
+  const customers = await User.find();
 
   return res
-  .status(200)
-  .json(new ApiResponce(200,customers,"Customer fetch successfuly"))
-})
+    .status(200)
+    .json(new ApiResponce(200, customers, "Customer fetch successfuly"));
+});
 
 export {
   registerUser,
@@ -265,5 +266,5 @@ export {
   changePassword,
   updateUserDetails,
   logOutUser,
-  getCustomers
+  getCustomers,
 };
