@@ -93,7 +93,9 @@ const userLogin = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "lax"
+   
   };
 
   return res
@@ -198,6 +200,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     userId,
     {
       fullName,
+      phone,
       dob,
       address,
       city,
@@ -219,9 +222,11 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  const options = {
+ const options = {
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: "lax"
+   
   };
   return res
     .status(200)

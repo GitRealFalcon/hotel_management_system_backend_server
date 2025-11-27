@@ -6,10 +6,10 @@ import { ApiError } from "./utils/ApiError.js"
 const App = express()
 
 App.use(cors({
-    // origin: process.env.CORS_ORIGIN,
-    origin:"http://localhost:5173",
+    origin: true,
     credentials: true
-}))
+}));
+
 App.use(express.json({limit : "16kb"}))
 App.use(express.urlencoded({
     extended:true,
@@ -17,6 +17,8 @@ App.use(express.urlencoded({
 }))
 App.use(express.static("public"))
 App.use(cookieParser())
+
+
 
 import { userRouter } from "./routes/user.routes.js"
 import { bookingRouter } from "./routes/booking.routes.js"
