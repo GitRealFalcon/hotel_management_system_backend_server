@@ -6,7 +6,9 @@ import { ApiError } from "./utils/ApiError.js"
 const App = express()
 
 App.use(cors({
-    origin: true,
+    origin: ["http://localhost:5173",
+      "https://hotel-management-system-frontend-two.vercel.app/"
+    ],
     credentials: true
 }));
 
