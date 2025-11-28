@@ -7,7 +7,8 @@ const App = express()
 App.set('trust proxy', 1)
 App.use(cors({
     origin: ["http://localhost:5173",
-      "https://hotel-management-system-frontend-two.vercel.app"
+      "https://hotel-management-system-frontend-two.vercel.app",
+      "https://www.realfalcon.in"
     ],
     credentials: true
 }));
