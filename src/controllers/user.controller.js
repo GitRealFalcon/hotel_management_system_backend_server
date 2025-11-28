@@ -95,15 +95,12 @@ const userLogin = asyncHandler(async (req, res) => {
     httpOnly: true,
     secure: true,
     sameSite: "none",
-     maxAge: 15 * 60 * 1000,
   };
 
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, {options,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    })
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponce(
         200,
