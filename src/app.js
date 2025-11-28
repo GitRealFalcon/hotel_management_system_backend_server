@@ -4,7 +4,7 @@ import cors from "cors"
 import { ApiError } from "./utils/ApiError.js"
 
 const App = express()
-
+App.set('trust proxy', 1)
 App.use(cors({
     origin: ["http://localhost:5173",
       "https://hotel-management-system-frontend-two.vercel.app"

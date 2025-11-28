@@ -96,7 +96,6 @@ const userLogin = asyncHandler(async (req, res) => {
     secure: true,
     sameSite: "none",
      maxAge: 15 * 60 * 1000,
-     path: "/",
   };
 
   return res
@@ -229,7 +228,6 @@ const logOutUser = asyncHandler(async (req, res) => {
     httpOnly: true,
      secure: true,
     sameSite: "none",
-     path: "/",
   };
   return res
     .status(200)
