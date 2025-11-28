@@ -55,9 +55,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const userLogin = asyncHandler(async (req, res) => {
   let { password, email, phone } = req.body;
+  const isProduction = process.env.NODE_ENV === 'production';
 
   const orConditions = [];
-
   if (email?.trim()) {
     orConditions.push({
       email: { $regex: `^${email.trim()}$`, $options: "i" },
@@ -223,6 +223,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production';
  const options = {
     httpOnly: true,
      secure: isProduction,
