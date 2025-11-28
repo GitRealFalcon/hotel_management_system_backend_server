@@ -96,7 +96,7 @@ const userLogin = asyncHandler(async (req, res) => {
      secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
     path: "/",
-    domain : isProduction ? '.vercel.app' : '.localhost',
+    domain : isProduction ? 'https://hotel-management-system-frontend-two.vercel.app' : 'localhost',
   };
 
   return res
@@ -229,7 +229,7 @@ const logOutUser = asyncHandler(async (req, res) => {
      secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
     path: "/",
-    domain : isProduction ? '.vercel.app' : '.localhost',
+    domain : isProduction ? 'https://hotel-management-system-frontend-two.vercel.app/' : 'localhost',
 
   };
   return res
