@@ -27,7 +27,9 @@ import { userRouter } from "./routes/user.routes.js"
 import { bookingRouter } from "./routes/booking.routes.js"
 import { roomRouter } from "./routes/room.routes.js"
 import { transactionRouter } from "./routes/transaction.routes.js"
+import { chatBotRouter } from "./routes/chatBot.routes.js"
 
+App.use("/api/v1/chatbot",chatBotRouter)
 App.use("/api/v1/users",userRouter)
 App.use("/api/v1/bookings",bookingRouter)
 App.use("/api/v1/rooms",roomRouter)
