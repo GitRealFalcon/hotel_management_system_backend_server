@@ -11,7 +11,8 @@ const suggetsRooms = async(message)=>{
             price:1,
             capacity:1,
             type:1,
-            isAvailable:1
+            isAvailable:1,
+            image:1
         })
 
         
@@ -21,7 +22,7 @@ const suggetsRooms = async(message)=>{
                 model: "qwen3-max",
                 messages: [
                     {
-                        "role": "system", "content": `You are an assistant that suggest rooms match user query from this rooms data:${JSON.stringify(rooms)}. Return exactly this JSON format with no extra text: [{"_id": "","roomNo": "","price": "","capacity": "","type": ""}]` },
+                        "role": "system", "content": `You are an assistant that suggest rooms match user query from this rooms data:${JSON.stringify(rooms)}. Return exactly this JSON format with no extra text: [{"_id": "","roomNo": "","price": "","capacity": "","type": "","image":[{secure_url:""}]}]` },
                     { "role": "user", "content": `${message}` }
                 ],
             },
