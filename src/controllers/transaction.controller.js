@@ -18,7 +18,7 @@ const razorpay = new Razorpay({
 });
 
 const createOrder = asyncHandler(async (req, res) => {
-  console.log("hello");
+  
   
   const { amount, bookingId } = req.body;
   const userId = req.user?._id;
@@ -154,7 +154,7 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
  return res
  .status(200)
- .json(new ApiError(200,transaction,"Payment verified successfully"))
+ .json(new ApiResponce(200,transaction,"Payment verified successfully"))
 });
 
 const getTransactionDetail = asyncHandler(async (req,res)=>{
